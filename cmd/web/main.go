@@ -12,9 +12,13 @@ import (
 
 const portNumber = ":8080"
 
+var app config.AppConfig
+
 // main is the main app function
 func main() {
-	var app config.AppConfig
+
+	//change this in true when in production
+	app.InProduction = false
 
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
