@@ -14,7 +14,7 @@
             <div class="col-md-6">
               <h1 class="mt-5">Search for Availability</h1>
   
-              <form action="/search-availability" method="post" novalidate class="needs-validation">
+              <form action="" method="get" novalidate class="needs-validation">
        
                 <div class="form-row">
                   
@@ -54,10 +54,10 @@
 
     <script>
         const elem = document.getElementById('reservation-dates');
-        const rangePicker = new DateRangePicker(elem, {
-            format: "yyyy-mm-dd",
-            minDate: new Date(),
-        });
+        const rangepicker = new DateRangePicker(elem, {
+          format: "yyyy-mm-dd"
+      });
+      
     </script>
 {{end}}
 
