@@ -8,11 +8,58 @@ import (
 	"github.com/TomislavGalic/bookings/pkg/config"
 	"github.com/TomislavGalic/bookings/pkg/handlers"
 	"github.com/TomislavGalic/bookings/pkg/render"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
+	"github.com/justinas/nosurf"
 )
 
 const portNumber = ":8080"
 
 var app config.AppConfig
+
+func WriteToConsole(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("hit the page")
+		next.ServeHTTP(w, r)
+	})
+}
+
+// Adds CSRF protection to all POST request
+func NoSurf(next http.Handler) http.Handler {
+	csrfHandler := nosurf.New(next)
+
+	csrfHandler.SetBaseCookie(http.Cookie{
+		HttpOnly: true,
+		Path:     "/",
+		Secure:   app.InProduction,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	return csrfHandler
+}
+
+func routes(app *config.AppConfig) http.Handler {
+
+	mux := chi.NewRouter()
+
+	mux.Use(middleware.Recoverer)
+	mux.Use(WriteToConsole)
+	mux.Use(NoSurf)
+
+	mux.Get("/", handlers.Repo.Home)
+	mux.Get("/about", handlers.Repo.About)
+	mux.Get("/generals-quarters", handlers.Repo.Generals)
+	mux.Get("/majors-suite", handlers.Repo.Majors)
+	mux.Get("/search-availability", handlers.Repo.Availability)
+	mux.Get("/contact", handlers.Repo.Contact)
+
+	mux.Get("/make-reservation", handlers.Repo.Reservation)
+
+	fileServer := http.FileServer(http.Dir("./static/"))
+	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
+	return mux
+
+}
 
 // main is the main app function
 func main() {
