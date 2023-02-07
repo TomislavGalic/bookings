@@ -58,7 +58,42 @@ let attention = Prompt();
                 </div>
             </form>
           `
-          attention.custom({msg: html, title: "Choose your dates"});
+          attention.custom({
+            msg: html, 
+            title: "Choose your dates",
+            
+            willOpen: () => {
+              const elem  = document.getElementById('reservation-dates-modal');
+              const rp = new DateRangePicker(elem, {
+                format: 'yyyy-mm-dd',
+                showOnFocus: true,
+                })
+            },
+            
+            didOpen: () => {
+              document.getElementById('start').removeAttribute('disabled');
+              document.getElementById('end').removeAttribute('disabled');
+            },
+            
+            callback: function(result) {
+              console.log("called");
+
+              let form = document.getElementById("check-availability-form");
+              let formData = new FormData(form);
+              formData.append("csrf_token", "{{.CSRFToken}}");
+
+              fetch('/search-availability-json', {
+                method: "post",
+                body: formData,
+              })
+                .then(response => response.json())
+                .then(data => {
+                  console.log(data)
+                  console.log(data.ok)
+                  console.log(data.message)
+                })
+            }
+          });
         })
 
 
@@ -137,18 +172,16 @@ Toast.fire({})
     title = "",
   } = c;
 
-  const { value: formValues } = await Swal.fire({
+  const { value: result } = await Swal.fire({
   title: title,
   html: msg,
   backdrop: false,
   focusConfirm: false,
   showCancelButton: true,
   willOpen: () => {
-    const elem  = document.getElementById('reservation-dates-modal');
-    const rp = new DateRangePicker(elem, {
-      format: 'yyyy-mm-dd',
-      showOnFocus: false,
-    })
+    if(c.willOpen !== undefined) {
+      c.willOpen();
+    }  
   },
 
   preConfirm: () => {
@@ -158,15 +191,25 @@ Toast.fire({})
     ]
   },
   didOpen: () => {
-    document.getElementById('start').removeAttribute('disabled');
-    document.getElementById('end').removeAttribute('disabled');
+    if (c.didOpen !== undefined) {
+      c.didOpen()
+    }
   }
 })
 
-if (formValues) {
-  Swal.fire(JSON.stringify(formValues))
-}
-
+  if(result) {
+    if (result.dismiss !== Swal.DismissReason.cancel) {
+      if (result.value !== "") {
+        if (c.callback !== undefined) {
+          c.callback(result)
+        }
+      } else {
+          c.callback(false)
+        } 
+    } else {
+        c.callback(false)
+      }
+  }
 }
 
   return {

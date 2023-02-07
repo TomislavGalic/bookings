@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/TomislavGalic/bookings/pkg/config"
-	"github.com/TomislavGalic/bookings/pkg/handlers"
-	"github.com/TomislavGalic/bookings/pkg/render"
+	"github.com/TomislavGalic/bookings/internal/config"
+	"github.com/TomislavGalic/bookings/internal/handlers"
+	"github.com/TomislavGalic/bookings/internal/render"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/justinas/nosurf"
@@ -44,6 +44,7 @@ func routes(app *config.AppConfig) http.Handler {
 	mux.Get("/majors-suite", handlers.Repo.Majors)
 	mux.Get("/search-availability", handlers.Repo.Availability)
 	mux.Post("/search-availability", handlers.Repo.PostAvailability)
+	mux.Post("/search-availability-json", handlers.Repo.AvailabilityJSON)
 	mux.Get("/contact", handlers.Repo.Contact)
 	mux.Get("/make-reservation", handlers.Repo.Reservation)
 
