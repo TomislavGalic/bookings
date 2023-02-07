@@ -17,13 +17,6 @@ const portNumber = ":8080"
 
 var app config.AppConfig
 
-func WriteToConsole(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("hit the page")
-		next.ServeHTTP(w, r)
-	})
-}
-
 // Adds CSRF protection to all POST request
 func NoSurf(next http.Handler) http.Handler {
 	csrfHandler := nosurf.New(next)
@@ -43,7 +36,6 @@ func routes(app *config.AppConfig) http.Handler {
 	mux := chi.NewRouter()
 
 	mux.Use(middleware.Recoverer)
-	mux.Use(WriteToConsole)
 	mux.Use(NoSurf)
 
 	mux.Get("/", handlers.Repo.Home)
@@ -51,8 +43,8 @@ func routes(app *config.AppConfig) http.Handler {
 	mux.Get("/generals-quarters", handlers.Repo.Generals)
 	mux.Get("/majors-suite", handlers.Repo.Majors)
 	mux.Get("/search-availability", handlers.Repo.Availability)
+	mux.Post("/search-availability", handlers.Repo.PostAvailability)
 	mux.Get("/contact", handlers.Repo.Contact)
-
 	mux.Get("/make-reservation", handlers.Repo.Reservation)
 
 	fileServer := http.FileServer(http.Dir("./static/"))
